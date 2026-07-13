@@ -1,0 +1,1 @@
+# sf-scriptable-object-config
