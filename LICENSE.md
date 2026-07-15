@@ -1,5 +1,6 @@
 MIT License
 
+Copyright (c) 2022 huran438
 Copyright (c) 2026 Lineri
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
