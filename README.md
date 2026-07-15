@@ -1,1 +1,2 @@
-# sf-scriptable-object-config
+A module for the SFramework from huran438. It is based on  <a href = "https://github.com/huran438/sf-configs">sf-configs</a> module. 
+It is a complete replacement for it, focused on using Scriptable Object instead of the json in the original module.
