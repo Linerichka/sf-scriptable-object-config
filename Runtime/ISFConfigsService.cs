@@ -10,11 +10,19 @@ namespace SFramework.Configs.Runtime
     [Preserve]
     public interface ISFConfigsService : ISFService
     {
+        public T[] GetConfigs<T>() where T : SFConfig, new();
+        public T GetConfig<T>() where T : SFConfig, new();
+        
+        
+        #region Compat
+        [Obsolete]
         public IEnumerable<ISFConfig> Configs { get; }
-        public bool TryGetConfigs<T>(out T[] configs) where T : ISFConfig;
-        public bool TryGetGlobalConfig<T>(out T config) where T : ISFGlobalConfig;
         
         [Obsolete]
-        public IEnumerable<T> GetConfigs<T>() where T : ISFConfig;
+        public bool TryGetConfigs<T>(out T[] configs) where T : class, ISFConfig , new();
+        
+        [Obsolete]
+        public bool TryGetGlobalConfig<T>(out T config) where T : class, ISFGlobalConfig , new();
+        #endregion
     }
 }

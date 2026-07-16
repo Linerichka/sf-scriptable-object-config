@@ -1,107 +1,108 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.RegularExpressions;
 using System.Threading;
 using Cysharp.Threading.Tasks;
-using Newtonsoft.Json;
 using UnityEngine;
 
 namespace SFramework.Configs.Runtime
 {
     public class SFConfigsService : ISFConfigsService
     {
-        private readonly Dictionary<Type, HashSet<object>> _repositoriesByType = new();
-        private readonly HashSet<ISFConfig> _configs = new();
+        private readonly Dictionary<Type, LinkedList<SFConfig>> _configsByType = new();
+        //for backward compatibility
+        private readonly List<ISFConfig> _configs = new ();
 
         public UniTask Init(CancellationToken cancellationToken)
         {
-            var textAssets = Resources.LoadAll<TextAsset>(string.Empty);
+            var configs = Resources.LoadAll<SFConfig>(string.Empty);
             
-            foreach (var type in GetInheritedClasses())
+            foreach (var config in configs)
             {
-                
-                foreach (var textAsset in textAssets)
+                var type = config.GetType();
+                if (_configsByType.TryGetValue(type, out var configList))
                 {
-                    var text = Regex.Replace(textAsset.text, "(\"(?:[^\"\\\\]|\\\\.)*\")|\\s+", "$1");
-                    if (!text.StartsWith($"{{\"Type\":\"{type.Name}\"") && !text.EndsWith($"\"Type\":\"{type.Name}\"}}")) continue;
-                    var config = JsonConvert.DeserializeObject(text, type) as ISFConfig;
-                    if (config == null) continue;
-
-                    if (config is ISFNodesConfig nodesConfig)
-                    {
-                        nodesConfig.BuildTree();
-                    }
-
-                    if (!_repositoriesByType.ContainsKey(type))
-                        _repositoriesByType[type] = new HashSet<object>();
-                    _repositoriesByType[type].Add(config);
-                    _configs.Add(config);
+                    configList.AddLast(config);
+                }
+                else
+                {
+                    var list = new LinkedList<SFConfig>();
+                    list.AddLast(config);
+                    _configsByType.Add(type, list);
+                }
+                
+                if (config is ISFConfig isfConfig)
+                {
+                    _configs.Add(isfConfig);
+                }
+                
+                if (config is ISFNodesConfig nodesConfig)
+                {
+                    nodesConfig.BuildTree();
                 }
             }
 
             return UniTask.CompletedTask;
         }
 
-        private Type[] GetInheritedClasses()
+
+        public T[] GetConfigs<T>() where T : SFConfig, new()
         {
-            return AppDomain.CurrentDomain.GetAssemblies()
-                .SelectMany(a => a.GetTypes())
-                .Where(t => t.IsClass && typeof(ISFConfig).IsAssignableFrom(t))
-                .ToArray();
+            if (_configsByType.TryGetValue(typeof(T), out var configList))
+            {
+                return configList.Cast<T>().ToArray();
+            }
+            else
+            {
+                return null;
+            }
         }
 
-        public void Dispose()
+        public T GetConfig<T>() where T : SFConfig, new()
         {
-            _repositoriesByType.Clear();
+            if (_configsByType.TryGetValue(typeof(T), out var configList))
+            {
+                return (T)configList.First.Value;
+            }
+            else
+            {
+                return null;
+            }
         }
+
         
+        #region Compat
         public IEnumerable<ISFConfig> Configs => _configs;
         
-        
-        public IEnumerable<T> GetConfigs<T>() where T : ISFConfig
+        public bool TryGetConfigs<T>(out T[] configs) where T : class, ISFConfig, new()
         {
-            return Configs.Cast<T>();
-        }
-        
-        public bool TryGetConfigs<T>(out T[] configs) where T : ISFConfig
-        {
-            if (_repositoriesByType.TryGetValue(typeof(T), out var repo))
+            if (_configsByType.TryGetValue(typeof(T), out var configList))
             {
-                configs = repo.Cast<T>().ToArray();
+                configs = configList.Cast<T>().ToArray();
                 return true;
             }
-
-            configs = Array.Empty<T>();
-            return false;
-        }
-        public bool TryGetNodesConfigs<T>(out T[] configs) where T : ISFNodesConfig
-        {
-            if (_repositoriesByType.TryGetValue(typeof(T), out var repo))
+            else
             {
-                configs = repo.Cast<T>().ToArray();
-                return true;
-            }
-
-            configs = Array.Empty<T>();
-            return false;
-        }
-        public bool TryGetGlobalConfig<T>(out T config) where T : ISFGlobalConfig
-        {
-            if (_repositoriesByType.TryGetValue(typeof(T), out var repo))
-            {
-                if (repo.Count > 0)
-                {
-                    config = (T) repo.FirstOrDefault();
-                    return true;
-                }
-
-                config = Activator.CreateInstance<T>();
+                configs = Array.Empty<T>();
                 return false;
+            }
+        }
+        public bool TryGetGlobalConfig<T>(out T config) where T : class, ISFGlobalConfig, new()
+        {
+            if (_configsByType.TryGetValue(typeof(T), out var configList))
+            {
+                config = configList.First.Value as T;
+                return true;
             }
 
             config = Activator.CreateInstance<T>();
             return false;
+        }
+        #endregion
+        
+        public void Dispose()
+        {
+            _configsByType.Clear();
         }
     }
 }

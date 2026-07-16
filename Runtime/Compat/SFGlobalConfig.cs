@@ -5,7 +5,7 @@ namespace SFramework.Configs.Runtime
 {
     [Preserve]
     [Serializable]
-    public abstract class SFGlobalConfig : ISFGlobalConfig
+    public abstract class SFGlobalConfig : SFConfig, ISFGlobalConfig
     {
         public string Type { get; set; }
         public long Version { get; set; }

@@ -27,7 +27,7 @@ namespace SFramework.Configs.Editor
                 return;
             }
 
-            var _paths = SFConfigsEditorUtility.GetNodePaths(sfTypeAttribute.Type.Name, sfTypeAttribute.Indent);
+            var _paths = SFConfigsEditorUtility.GetNodePaths(sfTypeAttribute.Type, sfTypeAttribute.Indent);
             if (_paths == null || _paths.Length == 0)
             {
                 GUI.backgroundColor = Color.red;
@@ -60,7 +60,7 @@ namespace SFramework.Configs.Editor
 
                 var index = Array.IndexOf(_paths, name);
                 
-                if (index == 0)
+                if (index == -1)
                 {
                     GUI.backgroundColor = Color.red;
                 }
@@ -71,7 +71,7 @@ namespace SFramework.Configs.Editor
                 
                 if (EditorGUI.EndChangeCheck())
                 {
-                    property.stringValue = index == 0 ? string.Empty : _paths[index];
+                    property.stringValue = index == -1 ? string.Empty : _paths[index];
                 }
                 
                 GUI.backgroundColor = Color.white;

@@ -1,39 +1,33 @@
 using System;
 using Newtonsoft.Json;
-using SFramework.Core.Runtime;
 using UnityEngine;
 using UnityEngine.Scripting;
-using UnityEngine.Serialization;
 
 namespace SFramework.Configs.Runtime
 {
     [Preserve]
     [Serializable]
-    public abstract class SFConfigNode : ISFConfigNode
+    public abstract class SFNodesConfig : SFConfig, ISFNodesConfig
     {
         public virtual void BuildTree()
         {
-            if (Parent == null)
-            {
-                FullId = Id;
-            }
-            
+            FullId = Id;
             if (Children == null) return;
-            
             foreach (var child in Children)
             {
-                var fullId = Parent == null ? $"{Id}/{child.Id}" : $"{Parent.FullId}/{Id}/{child.Id}";
-                child.FullId = fullId;
+                child.FullId = $"{Id}/{child.Id}";
                 child.Parent = this;
                 child.BuildTree();
             }
         }
-
-        [FormerlySerializedAs("_name")]
+        
         [SerializeField, JsonIgnore]
         private string _id;
 
-        public virtual string Id
+        public string Type { get; set; }
+        public long Version { get; set; }
+
+        public string Id
         {
             get => _id;
             set => _id = value;

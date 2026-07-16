@@ -1,6 +1,3 @@
-using System.Collections.Generic;
-using UnityEngine;
-
 namespace SFramework.Configs.Runtime
 {
     public static class SFConfigsExtensions
