@@ -54,7 +54,7 @@ namespace SFramework.Configs.Runtime
             }
             else
             {
-                return null;
+                return Array.Empty<T>();
             }
         }
 
