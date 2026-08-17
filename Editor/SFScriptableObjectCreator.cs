@@ -21,8 +21,15 @@ namespace SFramework.Configs.Editor
 
             foreach (var type in types)
             {
-                string path =
-                    $"SFramework/Configs/{type.FullName}";
+                string path = "";
+                if (type.FullName.StartsWith("SFramework"))
+                {
+                    path = $"SFramework/Configs.SFramework/{type.FullName}";
+                }
+                else
+                {
+                    path = $"SFramework/Configs.Game/{type.FullName}";
+                }
 
                 menu.AddItem(
                     new GUIContent(path),
