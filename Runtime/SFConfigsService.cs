@@ -4,6 +4,8 @@ using System.Linq;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.AddressableAssets;
+using UnityEngine.ResourceManagement.AsyncOperations;
 
 namespace SFramework.Configs.Runtime
 {
@@ -12,14 +14,20 @@ namespace SFramework.Configs.Runtime
         private readonly Dictionary<Type, LinkedList<SFConfig>> _configsByType = new();
         //for backward compatibility
         private readonly List<ISFConfig> _configs = new ();
+        
+        private AsyncOperationHandle<IList<SFConfig>> _configsHandle;
 
-        public UniTask Init(CancellationToken cancellationToken)
+        public async UniTask Init(CancellationToken cancellationToken)
         {
-            var configs = Resources.LoadAll<SFConfig>(string.Empty);
+            _configsHandle = Addressables.LoadAssetsAsync<SFConfig>("config", null);
+
+            await _configsHandle;
+            var configs = _configsHandle.Result;
             
             foreach (var config in configs)
             {
                 var type = config.GetType();
+                
                 if (_configsByType.TryGetValue(type, out var configList))
                 {
                     configList.AddLast(config);
@@ -41,8 +49,6 @@ namespace SFramework.Configs.Runtime
                     nodesConfig.BuildTree();
                 }
             }
-
-            return UniTask.CompletedTask;
         }
 
 
@@ -102,6 +108,7 @@ namespace SFramework.Configs.Runtime
         
         public void Dispose()
         {
+            _configsHandle.Release();
             _configsByType.Clear();
         }
     }

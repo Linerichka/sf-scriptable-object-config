@@ -4,6 +4,7 @@ using System;
 using System.IO;
 using System.Linq;
 using SFramework.Configs.Runtime;
+using UnityEditor.AddressableAssets;
 
 namespace SFramework.Configs.Editor
 {
@@ -63,6 +64,7 @@ namespace SFramework.Configs.Editor
 
             AssetDatabase.CreateAsset(asset, uniquePath);
             AssetDatabase.SaveAssets();
+            SFConfigAddressablesUtility.ProcessAsset(uniquePath, AddressableAssetSettingsDefaultObject.Settings);
 
             Selection.activeObject = asset;
         }

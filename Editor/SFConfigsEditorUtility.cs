@@ -16,6 +16,7 @@ namespace SFramework.Configs.Editor
         public static void RefreshConfigs()
         {
             _nodePathsByType.Clear();
+            SFConfigAddressablesUtility.ProcessAllConfigs();
         }
         
         public static string[] GetNodePaths(Type targetConfigType, int indentLevel)
