@@ -23,7 +23,11 @@ namespace SFramework.Configs.Editor
         {
             if (_nodePathsByType.TryGetValue(targetConfigType, out var nodePathByIndent))
             {
-                int maxLevel = nodePathByIndent.Keys.Max();
+                int maxLevel = 0;
+                if (nodePathByIndent.Keys.Count > 0)
+                {
+                    maxLevel = nodePathByIndent.Keys.Max();
+                }
 
                 if (indentLevel > maxLevel || maxLevel == 0)
                 {
