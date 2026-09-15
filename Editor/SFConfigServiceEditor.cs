@@ -8,15 +8,11 @@ using UnityEngine.ResourceManagement.AsyncOperations;
 
 namespace SFramework.Configs.Editor
 {
-    [InitializeOnLoad]
     public class SFConfigServiceEditor
     {
         private static Dictionary<Type, LinkedList<SFConfig>> _configsByType;
-        
         private static AsyncOperationHandle<IList<SFConfig>> _configsHandle;
         
-        private static SFConfigServiceEditor _instance;
-
         public static SFConfigServiceEditor Instance
         {
             get
@@ -27,6 +23,7 @@ namespace SFramework.Configs.Editor
                 return _instance;
             }
         }
+        private static SFConfigServiceEditor _instance;
 
         static SFConfigServiceEditor()
         {
@@ -36,13 +33,13 @@ namespace SFramework.Configs.Editor
             Init();
         }
 
-        private static void Init()
+        internal static void Init()
         {
             _configsHandle = Addressables.LoadAssetsAsync<SFConfig>("config", null);
 
             var configs =  _configsHandle.WaitForCompletion();
             
-            _configsByType = new(configs.Count+1);
+            _configsByType = new(configs.Count);
             
             foreach (var config in configs)
             {
@@ -90,7 +87,7 @@ namespace SFramework.Configs.Editor
             }
         }
 
-        private static void Dispose()
+        internal static void Dispose()
         {
             AssemblyReloadEvents.beforeAssemblyReload -= Dispose;
             EditorApplication.quitting -= Dispose;
